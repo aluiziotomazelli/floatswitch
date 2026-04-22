@@ -1,8 +1,5 @@
 #include "esp_log.h"
-#include "float_switch_logic.hpp"
-#include "debounced_input.hpp"
-#include "hal_gpio.hpp"
-#include "hal_timer.hpp"
+#include "float_switch.hpp"
 
 extern "C" void app_main(void)
 {
