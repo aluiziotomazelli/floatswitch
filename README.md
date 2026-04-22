@@ -2,7 +2,7 @@
 
 [![ESP-IDF Build](https://github.com/aluiziotomazelli/floatswitch/actions/workflows/build.yml/badge.svg)](https://github.com/aluiziotomazelli/floatswitch/actions/workflows/build.yml)
 [![Host Tests](https://github.com/aluiziotomazelli/floatswitch/actions/workflows/host_test.yml/badge.svg)](https://github.com/aluiziotomazelli/floatswitch/actions/workflows/host_test.yml)
-[![Coverage](https://img.shields.io/badge/coverage-95%25-orange)](https://aluiziotomazelli.github.io/floatswitch/index.html)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-orange)](https://aluiziotomazelli.github.io/floatswitch/index.html)
 
 The `FloatSwitch` component provides a robust abstraction for float level sensors. It translates electrical GPIO signals into meaningful tank states (Full/Empty) while handling hardware debouncing and power-efficient wake-up logic for Deep Sleep cycles.
 
