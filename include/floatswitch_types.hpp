@@ -6,6 +6,8 @@
 
 namespace floatswitch {
 
+constexpr uint8_t DEBOUNCE_SAMPLES = 10;
+
 /**
  * @brief Defines the logical condition under which a GPIO wake-up should be
  * triggered. This abstracts the electrical signal (LOW/HIGH) into a desired

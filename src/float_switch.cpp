@@ -58,25 +58,26 @@ bool FloatSwitch::is_contact_closed()
 {
     if (!initialized_)
         return false;
+// --- Debouncing Logic ---
+// To avoid false readings from electrical noise or contact bounce,
+// we take multiple samples over a short period.
+const uint8_t samples = DEBOUNCE_SAMPLES;
+const uint32_t delay_us = cfg_.debounce_time_us / samples;
+uint8_t high_count      = 0;
 
-    // --- Debouncing Logic ---
-    // To avoid false readings from electrical noise or contact bounce,
-    // we take multiple samples over a short period.
-    const uint8_t samples = 10;
-    const uint32_t delay_us = cfg_.debounce_time_us / samples;
-    uint8_t high_count = 0;
-
-    for (uint8_t i = 0; i < samples; i++) {
-        if (gpio_hal_.get_level(cfg_.gpio)) {
-            high_count++;
-        }
-        timer_hal_.delay_us(delay_us);
+for (uint8_t i = 0; i < samples; i++) {
+    if (gpio_hal_.get_level(cfg_.gpio)) {
+        high_count++;
     }
+    // A small delay is crucial for the debouncing to be effective.
+    timer_hal_.delay_us(delay_us);
+}
 
-    // A stable reading is determined by a majority vote of the samples.
-    // `raw_stable` will be true if the GPIO level was mostly HIGH, false if mostly
-    // LOW.
-    bool raw_stable = (high_count > (samples / 2));
+// A stable reading is determined by a majority vote of the samples.
+// `raw_stable` will be true if the GPIO level was mostly HIGH, false if mostly
+// LOW.
+bool raw_stable = (high_count > (samples / 2));
+
 
     // Finally, translate the stable electrical level into the contact state.
     // This depends on whether the closed contact pulls the signal LOW or HIGH.
