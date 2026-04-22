@@ -1,5 +1,9 @@
 # FloatSwitch Component
 
+[![ESP-IDF Build](https://github.com/aluiziotomazelli/floatswitch/actions/workflows/build.yml/badge.svg)](https://github.com/aluiziotomazelli/floatswitch/actions/workflows/build.yml)
+[![Host Tests](https://github.com/aluiziotomazelli/floatswitch/actions/workflows/host_test.yml/badge.svg)](https://github.com/aluiziotomazelli/floatswitch/actions/workflows/host_test.yml)
+[![Coverage](https://img.shields.io/badge/coverage-95%25-orange)](https://aluiziotomazelli.github.io/floatswitch/index.html)
+
 The `FloatSwitch` component provides a robust abstraction for float level sensors. It translates electrical GPIO signals into meaningful tank states (Full/Empty) while handling hardware debouncing and power-efficient wake-up logic for Deep Sleep cycles.
 
 ## Logic & Architecture
@@ -38,6 +42,7 @@ One of the most critical features is the `shouldEnableWakeup()` method. It preve
 #include "float_switch.hpp"
 
 // Configuration for a sensor that pulls to GND when closed (NO)
+// Note: GPIO_NUM_4 is an ESP-IDF specific type.
 FloatSwitch::Config cfg = {
     .gpio = GPIO_NUM_4,
     .normally_open = true,                          // Normally Open
@@ -59,29 +64,8 @@ void app_main() {
 }
 ```
 
-### Technical Specifications
-
-* **Debouncing:** Performs 5 samples with a 5ms delay between each, requiring a majority (3/5) for state confirmation. This results in a stable 25ms filter window.
-
-* **Validation:** Integrates with GpioValidator to ensure the selected pin is compatible with the requested Pull-Up/Down configuration.
-
-* **Memory Safety:** Full Lifecycle management with deinit() called on destruction to reset GPIO states.
-
-
 ## Unit Testing
 
-This component includes a comprehensive test suite located in the `test/` directory, following the ESP-IDF unit testing pattern. The tests verify electrical logic, timing accuracy for debouncing, and power management rules.
+This component includes a comprehensive suite of host-based unit tests to verify electrical logic, timing accuracy, and power management rules. 
 
-### Test Categories
-- `[lifecycle]`: Verifies memory-safe initialization and deinitialization.
-- `[logic]`: Validates the truth table for all `NO/NC` and `ActiveLevel` combinations.
-- `[timing]`: Measures the majority-vote sampling delay (expected ~25ms).
-- `[wakeup]`: Tests the anti-loop logic for Deep Sleep triggers.
-
-### Running the Tests
-To execute the tests, use the ESP-IDF Unit Test App. It is recommended to connect the `INPUT_PIN` to a `CTRL_PIN` (defined in the test file) via a jumper wire to allow automated signal simulation.
-
-1. Configure the `tool/unit-test-app` to include this component.
-2. Build and flash the test application:
-   ```bash
-   idf.py -T float_switch flash monitor
+For instructions on how to run the tests, see [host_test/README.md](host_test/README.md).
