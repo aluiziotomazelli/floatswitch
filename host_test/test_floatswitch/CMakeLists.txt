@@ -1,4 +1,4 @@
-# host_test/test_node_state_machine/CMakeLists.txt
+# host_test/test_floatswitch/CMakeLists.txt
 cmake_minimum_required(VERSION 3.16)
 
 # Common CMake configuration for all tests in the host_test directory.
