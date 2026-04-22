@@ -47,7 +47,7 @@ esp_err_t FloatSwitch::deinit()
     return gpio_hal_.reset_pin(cfg_.gpio);
 }
 
-bool FloatSwitch::update_and_get_stable_state()
+bool FloatSwitch::is_contact_closed()
 {
     if (!initialized_) return false;
 
@@ -62,15 +62,17 @@ bool FloatSwitch::update_and_get_stable_state()
         stable_level_ = current_raw;
     }
 
-    return stable_level_;
+    // Translate electrical level to contact state
+    if (cfg_.active_level == 0) { // LOW
+        return !stable_level_;
+    } else { // HIGH
+        return stable_level_;
+    }
 }
 
 bool FloatSwitch::is_tank_full()
 {
-    bool electrical_state = update_and_get_stable_state();
-    
-    // Convert electrical state to contact state (closed/open)
-    bool contact_closed = (cfg_.active_level == 0) ? !electrical_state : electrical_state;
+    bool contact_closed = is_contact_closed();
 
     if (cfg_.normally_open) {
         return !contact_closed; // NO: Full when open

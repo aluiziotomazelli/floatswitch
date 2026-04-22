@@ -61,7 +61,7 @@ private:
      * @brief Internal debouncing logic (non-blocking).
      * @return Current stable electrical state.
      */
-    bool update_and_get_stable_state();
+    bool is_contact_closed();
 };
 
 } // namespace floatswitch
