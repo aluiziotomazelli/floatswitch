@@ -5,7 +5,7 @@
 namespace floatswitch {
 
 /**
- * @file i_timer_hal.hpp
+ * @file i_hal_timer.hpp
  * @brief Interface for system time services.
  */
 

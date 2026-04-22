@@ -234,3 +234,14 @@ TEST_F(FloatSwitchTest, ShouldEnableWakeupUninitialized)
     EXPECT_FALSE(fs.should_enable_wakeup());
 }
 
+TEST_F(FloatSwitchTest, ShouldReturnFalseWhenWakeupDisabled)
+{
+    cfg.wakeup_on = WakeupCondition::NEVER;
+    FloatSwitch fs(cfg, mock_gpio, mock_timer);
+    fs.init();
+
+    // should_enable_wakeup() returns false when NEVER is configured
+    EXPECT_FALSE(fs.should_enable_wakeup());
+}
+
+
