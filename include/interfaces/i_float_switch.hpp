@@ -2,6 +2,8 @@
 
 #include "esp_err.h"
 
+namespace floatswitch {
+
 /**
  * @file i_float_switch.hpp
  * @brief Interface for the FloatSwitch component.
@@ -14,6 +16,13 @@
 class IFloatSwitch
 {
 public:
+    enum class WakeupCondition
+    {
+        NEVER,
+        WHEN_TANK_IS_EMPTY,
+        WHEN_TANK_IS_FULL,
+    };
+
     virtual ~IFloatSwitch() = default;
 
     /**
@@ -40,3 +49,5 @@ public:
      */
     virtual bool should_enable_wakeup() = 0;
 };
+
+} // namespace floatswitch

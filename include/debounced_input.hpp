@@ -5,6 +5,8 @@
 #include "interfaces/i_hal_timer.hpp"
 #include "driver/gpio.h"
 
+namespace floatswitch {
+
 /**
  * @file debounced_input.hpp
  * @brief Non-blocking debounced binary input implementation.
@@ -47,3 +49,5 @@ private:
     int64_t last_change_us_ = 0;
     bool initialized_      = false;
 };
+
+} // namespace floatswitch

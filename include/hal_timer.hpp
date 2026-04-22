@@ -2,6 +2,8 @@
 
 #include "interfaces/i_hal_timer.hpp"
 
+namespace floatswitch {
+
 /**
  * @file hal_timer.hpp
  * @brief Thin wrapper for ESP-IDF timer functions.
@@ -16,3 +18,5 @@ public:
     /** @copydoc ITimerHAL::delay_us() */
     void delay_us(uint32_t us) const override;
 };
+
+} // namespace floatswitch

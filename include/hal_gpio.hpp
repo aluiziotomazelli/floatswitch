@@ -2,6 +2,8 @@
 
 #include "interfaces/i_hal_gpio.hpp"
 
+namespace floatswitch {
+
 /**
  * @file hal_gpio.hpp
  * @brief Thin wrapper for ESP-IDF GPIO functions.
@@ -19,3 +21,5 @@ public:
     /** @copydoc IGpioHAL::get_level() */
     int get_level(gpio_num_t gpio_num) const override;
 };
+
+} // namespace floatswitch

@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+namespace floatswitch {
+
 /**
  * @file i_timer_hal.hpp
  * @brief Interface for system time services.
@@ -22,4 +24,6 @@ public:
 
     /** @copydoc esp_rom_delay_us() */
     virtual void delay_us(uint32_t us) const = 0;
-    };
+};
+
+} // namespace floatswitch

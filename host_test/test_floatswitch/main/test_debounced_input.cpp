@@ -5,6 +5,7 @@
 #include "mock_hal_gpio.hpp"
 #include "mock_hal_timer.hpp"
 
+using namespace floatswitch;
 using ::testing::Return;
 using ::testing::_;
 

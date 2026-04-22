@@ -2,50 +2,49 @@
 
 This document outlines the architectural and structural improvements for the `floatswitch` component to align with the project's strict HAL and SRP (Single Responsibility Principle) requirements.
 
-## Current Issues
+## Final Architecture
 
-1.  **Strict HAL Violation**: The component directly calls ESP-IDF GPIO and ROM APIs, making it impossible to run unit tests on a host (Linux) without hardware emulation.
-2.  **SRP Violation**: The `FloatSwitch` class manages hardware configuration, implements debouncing logic, and performs domain-specific interpretation (tank state) in a single class.
-3.  **Hardcoded Dependencies**: Lack of dependency injection prevents the use of mocks for testing.
-4.  **Blocking Logic**: The current debouncing uses `esp_rom_delay_us`, which blocks execution and is hardware-dependent.
+The component is organized into a layered, namespaced structure that supports both automated bundling and manual Dependency Injection (DI).
 
-## Proposed Architecture
+### Layers
+1.  **Hardware Abstraction (HAL)**: `IGpioHAL`, `ITimerHAL` (1:1 ESP-IDF wrappers).
+2.  **Signal Conditioning**: `DebouncedInput` (Non-blocking timing-based debouncer).
+3.  **Domain Logic**: `FloatSwitchLogic` (Tank interpretation and wakeup policy).
+4.  **Production Bundle**: `FloatSwitch` (Convenience class that wires the logic with an internal HAL stack).
 
-The component will be decomposed into three distinct layers to ensure separation of concerns and testability.
+### Namespace
+All symbols are enclosed in `namespace floatswitch` to prevent naming collisions with other components.
 
-### Layer 1: Hardware Abstraction (HAL)
-- **`IGpioHal`**: Interface defining 1:1 wrappers for ESP-IDF GPIO functions (`config`, `get_level`, `reset`).
-- **`IClockHal`**: Interface for time-related functions (`delay_us`, `get_time`).
+## Usage Patterns
 
-### Layer 2: Signal Conditioning
-- **`DebouncedInput`**: A class responsible for providing a stable boolean state from a noisy input.
-    - **Responsibility**: Polling/Interrupt management and debouncing algorithm.
-    - **Dependencies**: Injected `IGpioHal` and `IClockHal`.
+### 1. Simple Production Use
+Ideal for single-sensor setups where convenience is priority.
+```cpp
+floatswitch::FloatSwitch::Config cfg = { .gpio = GPIO_NUM_4 };
+floatswitch::FloatSwitch sensor(cfg);
+sensor.init();
+```
 
-### Layer 3: Domain Logic
-- **`FloatSwitch`**: The high-level component representing the physical sensor.
-    - **Responsibility**: Interpreting the stable signal into domain states (`isTankFull`) and providing power management hints (`shouldEnableWakeup`).
-    - **Dependencies**: Injected `IDebouncedInput` (interface).
+### 2. Manual Dependency Injection (Shared HALs)
+Ideal for multi-sensor setups to minimize resource redundancy.
+```cpp
+static floatswitch::GpioHAL shared_gpio;
+static floatswitch::TimerHAL shared_timer;
 
-## Implementation Steps
+floatswitch::DebouncedInput input1({GPIO_4, ...}, shared_gpio, shared_timer);
+floatswitch::FloatSwitchLogic sensor1(input1, ...);
+```
 
-### Phase 1: Infrastructure
-1.  Define interfaces in `include/interface/`:
-    - `IGpioHal.hpp`
-    - `IClockHal.hpp`
-    - `IBinaryInput.hpp` (to be implemented by `DebouncedInput`)
-2.  Implement ESP-IDF wrappers in `src/hal/`.
+### 3. Unit Testing
+Mocks are injected into the domain logic to verify behavior without hardware.
+```cpp
+MockBinaryInput mock_input;
+FloatSwitchLogic sensor(mock_input, ...);
+EXPECT_CALL(mock_input, is_active()).WillOnce(Return(true));
+```
 
-### Phase 2: Refactoring
-1.  **Refactor Debouncing**: Extract the logic from `FloatSwitch` into a standalone `DebouncedInput` class.
-2.  **Refactor FloatSwitch**: Update the class to accept an `IBinaryInput` interface via constructor injection.
-3.  **Remove Direct Includes**: Eliminate all `driver/gpio.h`, `esp_rom_sys.h`, and other ESP-IDF headers from the domain logic files.
-
-### Phase 3: Validation
-1.  **Mocking**: Create Google Mock implementations for all interfaces in `host_test_common/`.
-2.  **Host Tests**: Update `host_test/test_floatswitch/` to perform exhaustive unit testing of the domain logic and debouncing timing on the host.
-
-## Impact Analysis
-- **Breaking Change**: The constructor of `FloatSwitch` and its initialization flow will change significantly.
-- **Improved Testability**: 100% code coverage can be achieved on host machines without ESP-32 hardware.
-- **Portability**: The domain logic can be reused on any platform by providing a different HAL implementation.
+## Benefits
+- **Zero Naming Conflicts**: Scoped within `floatswitch`.
+- **High Testability**: 100% logic coverage on host machines.
+- **Resource Efficient**: Supports shared HAL instances across multiple sensors.
+- **Clean API**: Clear separation between wiring and business logic.

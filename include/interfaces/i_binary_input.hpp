@@ -1,5 +1,7 @@
 #pragma once
 
+namespace floatswitch {
+
 /**
  * @file i_binary_input.hpp
  * @brief Interface for a stable binary signal source.
@@ -20,3 +22,5 @@ public:
      */
     virtual bool is_active() = 0;
 };
+
+} // namespace floatswitch

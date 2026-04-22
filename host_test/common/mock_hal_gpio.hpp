@@ -3,6 +3,8 @@
 #include "gmock/gmock.h"
 #include "interfaces/i_hal_gpio.hpp"
 
+namespace floatswitch {
+
 class MockGpioHAL : public IGpioHAL
 {
 public:
@@ -10,3 +12,5 @@ public:
     MOCK_METHOD(esp_err_t, reset_pin, (gpio_num_t gpio_num), (override));
     MOCK_METHOD(int, get_level, (gpio_num_t gpio_num), (const, override));
 };
+
+} // namespace floatswitch

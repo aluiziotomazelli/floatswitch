@@ -1,5 +1,7 @@
 #include "debounced_input.hpp"
 
+namespace floatswitch {
+
 DebouncedInput::DebouncedInput(const Config &cfg, IGpioHAL &gpio_hal, ITimerHAL &timer_hal)
     : cfg_(cfg)
     , gpio_hal_(gpio_hal)
@@ -59,3 +61,5 @@ bool DebouncedInput::is_active()
         return stable_level_;
     }
 }
+
+} // namespace floatswitch

@@ -2,6 +2,7 @@ idf_component_register(
     NAME floatswitch
     SRCS
         "src/float_switch.cpp"
+        "src/float_switch_logic.cpp"
         "src/hal_gpio.cpp"
         "src/hal_timer.cpp"
         "src/debounced_input.cpp"

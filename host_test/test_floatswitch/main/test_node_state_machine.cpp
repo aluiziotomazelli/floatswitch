@@ -1,27 +1,28 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "float_switch.hpp"
+#include "float_switch_logic.hpp"
 #include "mock_binary_input.hpp"
 
+using namespace floatswitch;
 using ::testing::Return;
 
-class FloatSwitchTest : public ::testing::Test
+class FloatSwitchLogicTest : public ::testing::Test
 {
 protected:
     MockBinaryInput mock_input;
 };
 
-TEST_F(FloatSwitchTest, InitDeinit)
+TEST_F(FloatSwitchLogicTest, InitDeinit)
 {
-    FloatSwitch fs(mock_input, true, FloatSwitch::WakeupCondition::NEVER);
+    FloatSwitchLogic fs(mock_input, true, IFloatSwitch::WakeupCondition::NEVER);
     EXPECT_EQ(fs.init(), ESP_OK);
     EXPECT_EQ(fs.deinit(), ESP_OK);
 }
 
-TEST_F(FloatSwitchTest, TankFullNormallyOpen)
+TEST_F(FloatSwitchLogicTest, TankFullNormallyOpen)
 {
-    FloatSwitch fs(mock_input, true, FloatSwitch::WakeupCondition::NEVER);
+    FloatSwitchLogic fs(mock_input, true, IFloatSwitch::WakeupCondition::NEVER);
     fs.init();
 
     // NO switch: Tank full -> Contact OPEN (is_active = false)
@@ -33,9 +34,9 @@ TEST_F(FloatSwitchTest, TankFullNormallyOpen)
     EXPECT_FALSE(fs.is_tank_full());
 }
 
-TEST_F(FloatSwitchTest, TankFullNormallyClosed)
+TEST_F(FloatSwitchLogicTest, TankFullNormallyClosed)
 {
-    FloatSwitch fs(mock_input, false, FloatSwitch::WakeupCondition::NEVER);
+    FloatSwitchLogic fs(mock_input, false, IFloatSwitch::WakeupCondition::NEVER);
     fs.init();
 
     // NC switch: Tank full -> Contact CLOSED (is_active = true)
@@ -47,9 +48,9 @@ TEST_F(FloatSwitchTest, TankFullNormallyClosed)
     EXPECT_FALSE(fs.is_tank_full());
 }
 
-TEST_F(FloatSwitchTest, WakeupLogicWhenTankIsEmpty)
+TEST_F(FloatSwitchLogicTest, WakeupLogicWhenTankIsEmpty)
 {
-    FloatSwitch fs(mock_input, true, FloatSwitch::WakeupCondition::WHEN_TANK_IS_EMPTY);
+    FloatSwitchLogic fs(mock_input, true, IFloatSwitch::WakeupCondition::WHEN_TANK_IS_EMPTY);
     fs.init();
 
     // If tank is FULL, we SHOULD enable wakeup (to catch when it becomes empty)
@@ -61,9 +62,9 @@ TEST_F(FloatSwitchTest, WakeupLogicWhenTankIsEmpty)
     EXPECT_FALSE(fs.should_enable_wakeup());
 }
 
-TEST_F(FloatSwitchTest, WakeupLogicWhenTankIsFull)
+TEST_F(FloatSwitchLogicTest, WakeupLogicWhenTankIsFull)
 {
-    FloatSwitch fs(mock_input, true, FloatSwitch::WakeupCondition::WHEN_TANK_IS_FULL);
+    FloatSwitchLogic fs(mock_input, true, IFloatSwitch::WakeupCondition::WHEN_TANK_IS_FULL);
     fs.init();
 
     // If tank is EMPTY, we SHOULD enable wakeup (to catch when it becomes full)

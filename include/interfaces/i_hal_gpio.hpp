@@ -3,6 +3,8 @@
 #include "esp_err.h"
 #include "driver/gpio.h"
 
+namespace floatswitch {
+
 /**
  * @file i_hal_gpio.hpp
  * @brief Interface for GPIO hardware abstraction.
@@ -26,3 +28,5 @@ public:
     /** @copydoc gpio_get_level() */
     virtual int get_level(gpio_num_t gpio_num) const = 0;
 };
+
+} // namespace floatswitch
