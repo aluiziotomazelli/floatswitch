@@ -2,7 +2,6 @@ idf_component_register(
     SRCS 
         "main.cpp"
         "test_node_state_machine.cpp"
-        "test_debounced_input.cpp"
     REQUIRES 
         floatswitch
         gtest

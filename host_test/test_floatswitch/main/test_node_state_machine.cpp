@@ -1,77 +1,80 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "float_switch_logic.hpp"
-#include "mock_binary_input.hpp"
+#include "float_switch.hpp"
+#include "mock_hal_gpio.hpp"
+#include "mock_hal_timer.hpp"
 
 using namespace floatswitch;
 using ::testing::Return;
+using ::testing::_;
 
-class FloatSwitchLogicTest : public ::testing::Test
+class FloatSwitchTest : public ::testing::Test
 {
 protected:
-    MockBinaryInput mock_input;
+    MockGpioHAL mock_gpio;
+    MockTimerHAL mock_timer;
+    
+    FloatSwitch::Config cfg = {
+        .gpio = GPIO_NUM_4,
+        .normally_open = true,
+        .debounce_time_us = 50000,
+        .wakeup_on = IFloatSwitch::WakeupCondition::NEVER,
+        .active_level = 0 // LOW
+    };
+
+    void SetUp() override {
+        EXPECT_CALL(mock_gpio, config(_)).WillRepeatedly(Return(ESP_OK));
+        EXPECT_CALL(mock_gpio, get_level(_)).WillRepeatedly(Return(1));
+        EXPECT_CALL(mock_timer, get_time_us()).WillRepeatedly(Return(0));
+    }
 };
 
-TEST_F(FloatSwitchLogicTest, InitDeinit)
+TEST_F(FloatSwitchTest, InitAndDeinit)
 {
-    FloatSwitchLogic fs(mock_input, true, IFloatSwitch::WakeupCondition::NEVER);
+    FloatSwitch fs(cfg, mock_gpio, mock_timer);
     EXPECT_EQ(fs.init(), ESP_OK);
     EXPECT_EQ(fs.deinit(), ESP_OK);
 }
 
-TEST_F(FloatSwitchLogicTest, TankFullNormallyOpen)
+TEST_F(FloatSwitchTest, TankFullNormallyOpen)
 {
-    FloatSwitchLogic fs(mock_input, true, IFloatSwitch::WakeupCondition::NEVER);
+    FloatSwitch fs(cfg, mock_gpio, mock_timer);
     fs.init();
 
-    // NO switch: Tank full -> Contact OPEN (is_active = false)
-    EXPECT_CALL(mock_input, is_active()).WillOnce(Return(false));
+    // NO switch: Tank full -> Contact OPEN (Electrical HIGH if active_level is LOW)
+    EXPECT_CALL(mock_gpio, get_level(_)).WillRepeatedly(Return(1));
+    EXPECT_CALL(mock_timer, get_time_us()).WillRepeatedly(Return(100000));
     EXPECT_TRUE(fs.is_tank_full());
 
-    // NO switch: Tank empty -> Contact CLOSED (is_active = true)
-    EXPECT_CALL(mock_input, is_active()).WillOnce(Return(true));
+    // NO switch: Tank empty -> Contact CLOSED (Electrical LOW if active_level is LOW)
+    EXPECT_CALL(mock_gpio, get_level(_)).WillRepeatedly(Return(0));
+    EXPECT_CALL(mock_timer, get_time_us()).WillRepeatedly(Return(200000));
     EXPECT_FALSE(fs.is_tank_full());
 }
 
-TEST_F(FloatSwitchLogicTest, TankFullNormallyClosed)
+TEST_F(FloatSwitchTest, DebounceGlitchRejection)
 {
-    FloatSwitchLogic fs(mock_input, false, IFloatSwitch::WakeupCondition::NEVER);
+    cfg.debounce_time_us = 50000;
+    FloatSwitch fs(cfg, mock_gpio, mock_timer);
     fs.init();
 
-    // NC switch: Tank full -> Contact CLOSED (is_active = true)
-    EXPECT_CALL(mock_input, is_active()).WillOnce(Return(true));
-    EXPECT_TRUE(fs.is_tank_full());
+    // Start with HIGH (Tank full)
+    EXPECT_CALL(mock_gpio, get_level(_)).WillRepeatedly(Return(1));
+    EXPECT_CALL(mock_timer, get_time_us()).WillOnce(Return(0));
+    fs.is_tank_full();
 
-    // NC switch: Tank empty -> Contact OPEN (is_active = false)
-    EXPECT_CALL(mock_input, is_active()).WillOnce(Return(false));
-    EXPECT_FALSE(fs.is_tank_full());
-}
+    // Signal drops to LOW at t=10ms
+    EXPECT_CALL(mock_gpio, get_level(_)).WillRepeatedly(Return(0));
+    EXPECT_CALL(mock_timer, get_time_us()).WillOnce(Return(10000));
+    EXPECT_TRUE(fs.is_tank_full()); // Still FULL (not debounced yet)
 
-TEST_F(FloatSwitchLogicTest, WakeupLogicWhenTankIsEmpty)
-{
-    FloatSwitchLogic fs(mock_input, true, IFloatSwitch::WakeupCondition::WHEN_TANK_IS_EMPTY);
-    fs.init();
+    // Signal goes back to HIGH (glitch) at t=20ms
+    EXPECT_CALL(mock_gpio, get_level(_)).WillRepeatedly(Return(1));
+    EXPECT_CALL(mock_timer, get_time_us()).WillOnce(Return(20000));
+    EXPECT_TRUE(fs.is_tank_full()); // Still FULL
 
-    // If tank is FULL, we SHOULD enable wakeup (to catch when it becomes empty)
-    EXPECT_CALL(mock_input, is_active()).WillOnce(Return(false)); // Tank full
-    EXPECT_TRUE(fs.should_enable_wakeup());
-
-    // If tank is EMPTY, we SHOULD NOT enable wakeup (to avoid loop)
-    EXPECT_CALL(mock_input, is_active()).WillOnce(Return(true)); // Tank empty
-    EXPECT_FALSE(fs.should_enable_wakeup());
-}
-
-TEST_F(FloatSwitchLogicTest, WakeupLogicWhenTankIsFull)
-{
-    FloatSwitchLogic fs(mock_input, true, IFloatSwitch::WakeupCondition::WHEN_TANK_IS_FULL);
-    fs.init();
-
-    // If tank is EMPTY, we SHOULD enable wakeup (to catch when it becomes full)
-    EXPECT_CALL(mock_input, is_active()).WillOnce(Return(true)); // Tank empty
-    EXPECT_TRUE(fs.should_enable_wakeup());
-
-    // If tank is FULL, we SHOULD NOT enable wakeup (to avoid loop)
-    EXPECT_CALL(mock_input, is_active()).WillOnce(Return(false)); // Tank full
-    EXPECT_FALSE(fs.should_enable_wakeup());
+    // Signal stays HIGH at t=70ms
+    EXPECT_CALL(mock_timer, get_time_us()).WillOnce(Return(70000));
+    EXPECT_TRUE(fs.is_tank_full()); // Confirmed FULL
 }

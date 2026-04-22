@@ -1,44 +1,30 @@
 #include "esp_log.h"
 #include "float_switch.hpp"
+#include "hal_gpio.hpp"
+#include "hal_timer.hpp"
 
 extern "C" void app_main(void)
 {
-    ESP_LOGI("main", "Testing FloatSwitch component with Manual DI and Namespaces");
+    ESP_LOGI("main", "FloatSwitch - Simple and Clean DI");
 
-    // 1. Single HAL instances shared by multiple sensors
-    static floatswitch::GpioHAL gpio_hal;
-    static floatswitch::TimerHAL timer_hal;
+    // 1. Declare the tools (stateless HALs)
+    static floatswitch::GpioHAL gpio;
+    static floatswitch::TimerHAL timer;
 
-    // 2. Sensor 1 configuration
-    floatswitch::DebouncedInput::Config cfg1 = {
-        .gpio              = GPIO_NUM_4,
-        .debounce_time_us  = 50000,
-        .active_level      = floatswitch::DebouncedInput::ActiveLevel::LOW
+    // 2. Configure and create the sensor
+    floatswitch::FloatSwitch::Config cfg = {
+        .gpio             = GPIO_NUM_4,
+        .normally_open    = true,
+        .debounce_time_us = 50000,
+        .wakeup_on        = floatswitch::IFloatSwitch::WakeupCondition::WHEN_TANK_IS_EMPTY,
+        .active_level     = 0 // LOW
     };
-    floatswitch::DebouncedInput input1(cfg1, gpio_hal, timer_hal);
-    input1.init();
 
-    floatswitch::FloatSwitchLogic sensor1(input1, true, floatswitch::IFloatSwitch::WakeupCondition::WHEN_TANK_IS_EMPTY);
-    sensor1.init();
+    floatswitch::FloatSwitch sensor(cfg, gpio, timer);
 
-    // 3. Sensor 2 configuration (Sharing the same HALs)
-    floatswitch::DebouncedInput::Config cfg2 = {
-        .gpio              = GPIO_NUM_5,
-        .debounce_time_us  = 50000,
-        .active_level      = floatswitch::DebouncedInput::ActiveLevel::LOW
-    };
-    floatswitch::DebouncedInput input2(cfg2, gpio_hal, timer_hal);
-    input2.init();
-
-    floatswitch::FloatSwitchLogic sensor2(input2, true, floatswitch::IFloatSwitch::WakeupCondition::WHEN_TANK_IS_FULL);
-    sensor2.init();
-
-    // Verify
-    bool full1 = sensor1.is_tank_full();
-    bool full2 = sensor2.is_tank_full();
-    ESP_LOGI("main", "Sensor 1 (GPIO 4): %s", full1 ? "FULL" : "EMPTY");
-    ESP_LOGI("main", "Sensor 2 (GPIO 5): %s", full2 ? "FULL" : "EMPTY");
-
-    sensor1.deinit();
-    sensor2.deinit();
+    if (sensor.init() == ESP_OK) {
+        bool full = sensor.is_tank_full();
+        ESP_LOGI("main", "Tank status: %s", full ? "FULL" : "EMPTY");
+        sensor.deinit();
+    }
 }
