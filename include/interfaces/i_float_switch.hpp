@@ -16,13 +16,6 @@ namespace floatswitch {
 class IFloatSwitch
 {
 public:
-    enum class WakeupCondition
-    {
-        NEVER,
-        WHEN_TANK_IS_EMPTY,
-        WHEN_TANK_IS_FULL,
-    };
-
     virtual ~IFloatSwitch() = default;
 
     /**

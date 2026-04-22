@@ -12,13 +12,12 @@ extern "C" void app_main(void)
     static floatswitch::TimerHAL timer;
 
     // 2. Configure and create the sensor
-    floatswitch::FloatSwitch::Config cfg = {
-        .gpio             = GPIO_NUM_4,
-        .normally_open    = true,
+    floatswitch::Config cfg = {
+        .gpio = GPIO_NUM_4,
+        .normally_open = true,
         .debounce_time_us = 50000,
-        .wakeup_on        = floatswitch::IFloatSwitch::WakeupCondition::WHEN_TANK_IS_EMPTY,
-        .active_level     = 0 // LOW
-    };
+        .active_level = floatswitch::ActiveLevel::LOW,
+        .wakeup_on = floatswitch::WakeupCondition::WHEN_TANK_IS_EMPTY};
 
     floatswitch::FloatSwitch sensor(cfg, gpio, timer);
 

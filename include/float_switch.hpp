@@ -1,8 +1,9 @@
 #pragma once
 
-#include "interfaces/i_hal_gpio.hpp"
-#include "interfaces/i_hal_timer.hpp"
-#include "interfaces/i_float_switch.hpp"
+#include "i_float_switch.hpp"
+#include "i_hal_gpio.hpp"
+#include "i_hal_timer.hpp"
+#include "floatswitch_types.hpp"
 
 namespace floatswitch {
 
@@ -14,24 +15,12 @@ class FloatSwitch : public IFloatSwitch
 {
 public:
     /**
-     * @brief Configuration for the float switch.
-     */
-    struct Config
-    {
-        gpio_num_t gpio;
-        bool normally_open        = true;
-        uint32_t debounce_time_us = 50000;
-        WakeupCondition wakeup_on = WakeupCondition::NEVER;
-        int active_level          = 0; // 0 for LOW, 1 for HIGH
-    };
-
-    /**
      * @brief Constructor with explicit Dependency Injection.
      * @param cfg Configuration.
      * @param gpio_hal Hardware abstraction for GPIO.
      * @param timer_hal Hardware abstraction for Timer.
      */
-    FloatSwitch(const Config &cfg, IGpioHAL &gpio_hal, ITimerHAL &timer_hal);
+    FloatSwitch(const Config& cfg, IGpioHAL& gpio_hal, ITimerHAL& timer_hal);
 
     ~FloatSwitch() override = default;
 
@@ -49,13 +38,10 @@ public:
 
 private:
     Config cfg_;
-    IGpioHAL &gpio_hal_;
-    ITimerHAL &timer_hal_;
+    IGpioHAL& gpio_hal_;
+    ITimerHAL& timer_hal_;
 
-    bool initialized_      = false;
-    bool last_raw_level_   = false;
-    bool stable_level_     = false;
-    int64_t last_change_us_ = 0;
+    bool initialized_ = false;
 
     /**
      * @brief Internal debouncing logic (non-blocking).
