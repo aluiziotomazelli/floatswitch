@@ -41,16 +41,20 @@ One of the most critical features is the `shouldEnableWakeup()` method. It preve
 ```cpp
 #include "float_switch.hpp"
 
-// Configuration for a sensor that pulls to GND when closed (NO)
-// Note: GPIO_NUM_4 is an ESP-IDF specific type.
-FloatSwitch::Config cfg = {
-    .gpio = GPIO_NUM_4,
-    .normally_open = true,                          // Normally Open
-    .active_level = FloatSwitch::ActiveLevel::LOW,  // Pulls to GND
-    .wakeup_on = FloatSwitch::WakeupCondition::WHEN_TANK_IS_EMPTY
-};
+// Declare the tools (stateless HALs)
+static floatswitch::GpioHAL gpio;
+static floatswitch::TimerHAL timer;
 
-FloatSwitch sensor(cfg);
+// Configuration for a sensor that pulls to GND when closed (NO)
+floatswitch::Config cfg = {
+    .gpio = GPIO_NUM_4,                                             // GPIO pin number
+    .normally_open = true,                                          // true = Normally Open, false = Normally Closed
+    .debounce_time_us = 50000,                                      // Debounce time in microseconds
+    .active_level = floatswitch::ActiveLevel::LOW,                  // LOW = Active when low, HIGH = Active when high
+    .wakeup_on = floatswitch::WakeupCondition::WHEN_TANK_IS_EMPTY}; // NEVER, WHEN_TANK_IS_EMPTY, WHEN_TANK_IS_FULL
+
+floatswitch::FloatSwitch sensor(cfg, gpio, timer);
+
 
 void app_main() {
     if (sensor.init() == ESP_OK) {
