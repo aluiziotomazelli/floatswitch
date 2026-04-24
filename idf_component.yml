@@ -27,6 +27,8 @@ files:
     - "host_test/**/*"
     - "test_apps/**/*"
     - "legacy_*/**/*"
+    - .clang-format
+    - .gitignore
     
   
 examples:

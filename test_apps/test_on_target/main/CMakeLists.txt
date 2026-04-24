@@ -1,12 +1,12 @@
 idf_component_register(
     SRCS
         "main.c" 
-        "test_sensor_floatswitch.cpp"
+        "floatswitch.cpp"
     INCLUDE_DIRS 
         "."
     REQUIRES 
         unity 
-        sensor_floatswitch
+        floatswitch
         gpio_validator
     WHOLE_ARCHIVE
 )
