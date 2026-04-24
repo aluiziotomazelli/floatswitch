@@ -4,6 +4,8 @@
 #include "i_hal_gpio.hpp"
 #include "i_hal_timer.hpp"
 #include "floatswitch_types.hpp"
+#include "hal_gpio.hpp"
+#include "hal_timer.hpp"
 
 namespace floatswitch {
 
