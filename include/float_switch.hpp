@@ -1,8 +1,8 @@
 #pragma once
 
-#include "i_float_switch.hpp"
-#include "i_hal_gpio.hpp"
-#include "i_hal_timer.hpp"
+#include "interfaces/i_float_switch.hpp"
+#include "interfaces/i_fs_hal_gpio.hpp"
+#include "interfaces/i_fs_hal_timer.hpp"
 #include "floatswitch_types.hpp"
 #include "hal_gpio.hpp"
 #include "hal_timer.hpp"

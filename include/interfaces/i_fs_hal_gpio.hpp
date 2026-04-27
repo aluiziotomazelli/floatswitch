@@ -6,7 +6,7 @@
 namespace floatswitch {
 
 /**
- * @file i_hal_gpio.hpp
+ * @file i_fs_hal_gpio.hpp
  * @brief Interface for GPIO hardware abstraction.
  */
 

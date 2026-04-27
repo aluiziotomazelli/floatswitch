@@ -1,6 +1,6 @@
 #pragma once
 
-#include "interfaces/i_hal_gpio.hpp"
+#include "interfaces/i_fs_hal_gpio.hpp"
 
 namespace floatswitch {
 

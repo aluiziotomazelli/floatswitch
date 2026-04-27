@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gmock/gmock.h"
-#include "interfaces/i_hal_timer.hpp"
+#include "interfaces/i_fs_hal_timer.hpp"
 
 namespace floatswitch {
 
